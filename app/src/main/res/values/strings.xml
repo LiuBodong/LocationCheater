@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">LocationCheater</string>
-    <string name="switchLocationEnableName">Enabled</string>
+    <string name="switch_location_enable_name">Enabled</string>
+    <string name="confirm_add_location_button_name">OK</string>
+    <string name="location_detail_profile_name">Profile Name</string>
+    <string name="wifi_state">Wifi State</string>
+    <string name="location_detail_wifi_info">Wifi Information</string>
+    <string name="connected_wifi">Connected Wifi</string>
+    <string name="wifi_scan_results">Wifi Scan Results</string>
+    <string name="ssid">SSID</string>
+    <string name="mac">MAC</string>
 </resources>
