@@ -6,14 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import org.codebase.locationcheater.R;
-import org.codebase.locationcheater.databinding.LocationInformationItemBinding;
+import org.codebase.locationcheater.databinding.WifiInformationItemBinding;
 
 import java.util.function.Consumer;
 
 public class LocationWifiItem extends LinearLayout {
 
-    private LocationInformationItemBinding binding;
+    private WifiInformationItemBinding binding;
 
     public LocationWifiItem(Context context) {
         super(context);
@@ -22,7 +21,7 @@ public class LocationWifiItem extends LinearLayout {
 
     private void init(Context context) {
         LayoutInflater layoutInflater = LayoutInflater.from(context);
-        binding = LocationInformationItemBinding.inflate(layoutInflater, this, true);
+        binding = WifiInformationItemBinding.inflate(layoutInflater, this, true);
     }
 
     public CharSequence getSsid() {

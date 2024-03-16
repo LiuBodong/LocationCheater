@@ -54,4 +54,6 @@ dependencies {
     implementation(libs.libxposed.service)
     implementation(libs.room)
     annotationProcessor(libs.room.compiler)
+    implementation(libs.jackson)
+    implementation(libs.commons.lang3)
 }

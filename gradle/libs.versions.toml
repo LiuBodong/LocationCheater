@@ -9,7 +9,8 @@ xposed-service = "100-1.0.0"
 room = "2.6.1"
 navigation-fragment = "2.7.7"
 navigation-ui = "2.7.7"
-
+jackson = "2.16.2"
+commons-lang3 = "3.14.0"
 
 [libraries]
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -22,7 +23,8 @@ room = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigation-fragment" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigation-ui" }
-
+jackson = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+commons-lang3 = { group = "org.apache.commons", name = "commons-lang3", version.ref = "commons-lang3" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

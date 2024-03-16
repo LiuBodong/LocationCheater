@@ -9,4 +9,7 @@
     <string name="wifi_scan_results">Wifi Scan Results</string>
     <string name="ssid">SSID</string>
     <string name="mac">MAC</string>
+    <string name="location_detail_telephone_info">Telephone Information</string>
+    <string name="network_operator">NetworkOperator</string>
+    <string name="location_detail_gnss_info">Gnss Information\n</string>
 </resources>
