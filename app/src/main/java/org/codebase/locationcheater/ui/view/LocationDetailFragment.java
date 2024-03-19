@@ -41,13 +41,24 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import org.apache.commons.lang3.StringUtils;
 import org.codebase.locationcheater.R;
 import org.codebase.locationcheater.databinding.LocationDetailFragmentBinding;
+import org.codebase.locationcheater.ui.dao.LocationDto;
+import org.codebase.locationcheater.ui.dao.ProfileDto;
+import org.codebase.locationcheater.ui.dao.TelephoneDto;
+import org.codebase.locationcheater.ui.dao.WifiDto;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class LocationDetailFragment extends Fragment {
+
+    private ProfileDto profileDto;
 
     private LocationDetailFragmentBinding binding;
 
@@ -55,6 +66,11 @@ public class LocationDetailFragment extends Fragment {
 
     public LocationDetailFragment() {
         super(R.layout.location_detail_fragment);
+    }
+
+    public LocationDetailFragment(ProfileDto profileDto) {
+        this();
+        this.profileDto = profileDto;
     }
 
     @Override
@@ -84,33 +100,104 @@ public class LocationDetailFragment extends Fragment {
         this.checkAndAcquirePermissions();
 
         if (savedInstanceState == null) {
-            binding.confirmButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString("data", "aaaa");
-                    getParentFragmentManager().setFragmentResult("addLocation", bundle);
+            binding.confirmButton.setOnClickListener(v -> {
+                saveProfile();
+                if (profileDto == null) {
+                    Toast.makeText(getContext(), "Save failed!", Toast.LENGTH_SHORT).show();
+                    getParentFragmentManager().popBackStack();
+                    return;
                 }
+                String profileName = profileDto.getProfileName();
+                if (StringUtils.isEmpty(profileName) || StringUtils.isAllBlank(profileName)) {
+                    Toast.makeText(getContext(), "Profile name is empty!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                String data = "{}";
+                if (profileDto != null) {
+                    try {
+                        data = JsonMapper.builder().build()
+                                .writer(new DefaultPrettyPrinter())
+                                .writeValueAsString(profileDto);
+                    } catch (Exception ignored) {
+
+                    }
+                }
+                Bundle bundle = new Bundle();
+                bundle.putString("data", data);
+                getParentFragmentManager().setFragmentResult("data", bundle);
+                getParentFragmentManager().popBackStack();
             });
         }
 
-        binding.confirmButton.setOnClickListener(v -> this.saveProfile());
-
         binding.refreshWifiInformationButton.setOnClickListener(v -> this.initWifiInformation());
-        this.initWifiInformation();
         binding.addWifiItemButton.setOnClickListener(v -> this.addWifiInformationItem(null));
-
-        this.initTelephoneInfo();
         binding.refreshTelephoneInformationButton.setOnClickListener(v -> this.initTelephoneInfo());
-
-        this.initGnss();
         binding.refreshGnssInformationButton.setOnClickListener(v -> this.initGnss());
+        if (this.profileDto == null) {
+            this.initGnss();
+            this.initWifiInformation();
+            this.initTelephoneInfo();
+        } else {
+            restore(profileDto);
+        }
+    }
+
+    public void restore(ProfileDto profileDto) {
+        binding.locationProfileName.setText(profileDto.getProfileName());
+        binding.switchWifiEnabled.setEnabled(profileDto.isWifiEnabled());
+        binding.connectedWifiSsid.setText(profileDto.getConnectedWifi().getSsid());
+        binding.connectedWifiMac.setText(profileDto.getConnectedWifi().getMac());
+        profileDto.getScanResults().forEach(wifiDto -> {
+            LocationWifiItem item = new LocationWifiItem(getContext());
+            item.setSsid(wifiDto.getSsid());
+            item.setMac(wifiDto.getMac());
+            item.onItemDelete(v -> binding.wifiListView.removeView(item));
+            binding.wifiListView.addView(item);
+        });
+        profileDto.getTelephones().forEach(telephoneDto -> {
+            LocationTelephoneItem locationTelephoneItem = new LocationTelephoneItem(getContext());
+            locationTelephoneItem.setType(telephoneDto.getType());
+            locationTelephoneItem.setCid(String.valueOf(telephoneDto.getCid()));
+            locationTelephoneItem.setLac(String.valueOf(telephoneDto.getLac()));
+            locationTelephoneItem.onItemDelete(v -> binding.telephoneInformationListView.removeView(locationTelephoneItem));
+            binding.telephoneInformationListView.addView(locationTelephoneItem);
+        });
+        binding.latitude.setText(String.valueOf(profileDto.getLocation().getLatitude()));
+        binding.longitude.setText(String.valueOf(profileDto.getLocation().getLongitude()));
     }
 
     private void saveProfile() {
         String profileName = binding.locationProfileName.getText().toString();
         boolean wifiEnabled = binding.switchWifiEnabled.isEnabled();
-        getParentFragmentManager().popBackStack();
+        String connectedWifiSsid = binding.connectedWifiSsid.getText().toString();
+        String connectedWifiMac = binding.connectedWifiMac.getText().toString();
+        WifiDto connectedWifi = new WifiDto(connectedWifiSsid, connectedWifiMac);
+        int numWifi = binding.wifiListView.getChildCount();
+        List<WifiDto> wifiScanResults = IntStream.range(0, numWifi).mapToObj(index -> binding.wifiListView.getChildAt(index))
+                .filter(view -> view instanceof LocationWifiItem)
+                .map(view -> {
+                    LocationWifiItem locationWifiItem = (LocationWifiItem) view;
+                    return new WifiDto(locationWifiItem.getSsid().toString(), locationWifiItem.getMac().toString());
+                }).collect(Collectors.toList());
+        int numTelephoneInfo = binding.telephoneInformationListView.getChildCount();
+        List<TelephoneDto> telephoneInfoList = IntStream.range(0, numTelephoneInfo).mapToObj(index -> binding.telephoneInformationListView.getChildAt(index))
+                .filter(view -> view instanceof LocationTelephoneItem)
+                .map(view -> {
+                    LocationTelephoneItem locationTelephoneItem = (LocationTelephoneItem) view;
+                    String type = locationTelephoneItem.getType();
+                    String lac = locationTelephoneItem.getLac();
+                    String cid = locationTelephoneItem.getCid();
+                    return new TelephoneDto(type, Integer.parseInt(lac), Integer.parseInt(cid));
+                })
+                .collect(Collectors.toList());
+        String latitude = binding.latitude.getText().toString();
+        String longitude = binding.longitude.getText().toString();
+        LocationDto locationDto = new LocationDto(Float.parseFloat(latitude), Float.parseFloat(longitude));
+        ProfileDto newProfileDto = new ProfileDto(profileName, wifiEnabled, connectedWifi, wifiScanResults, telephoneInfoList, locationDto);
+        if (this.profileDto != null) {
+            newProfileDto.setId(this.profileDto.getId());
+        }
+        this.profileDto = newProfileDto;
     }
 
     private void addWifiInformationItem(ScanResult scanResult) {

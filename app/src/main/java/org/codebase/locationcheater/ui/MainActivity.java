@@ -1,6 +1,8 @@
 package org.codebase.locationcheater.ui;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -9,11 +11,16 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentResultListener;
+import androidx.room.Room;
 
 import org.codebase.locationcheater.R;
 import org.codebase.locationcheater.databinding.MainActivityBinding;
+import org.codebase.locationcheater.ui.dao.ProfileDatabase;
+import org.codebase.locationcheater.ui.dao.ProfileTypeConverters;
 import org.codebase.locationcheater.ui.view.ShowListFragment;
+
+import io.github.libxposed.service.XposedService;
+import io.github.libxposed.service.XposedServiceHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,18 +37,48 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        FragmentManager supportFragmentManager = getSupportFragmentManager();
-        supportFragmentManager.setFragmentResultListener("addLocation", this, new FragmentResultListener() {
+        XposedServiceHelper.registerListener(new XposedServiceHelper.OnServiceListener() {
             @Override
-            public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-                String data = result.getString("data");
-                System.out.println(data);
+            public void onServiceBind(@NonNull XposedService service) {
+                SharedPreferences settings = service.getRemotePreferences("settings");
+                getSupportFragmentManager()
+                        .setFragmentResultListener("switch", MainActivity.this, (requestKey, result) -> {
+                            boolean enabled = result.getBoolean("enabled");
+                            boolean success = settings.edit().putBoolean("enabled", enabled)
+                                    .commit();
+                            if (!success) {
+                                Toast.makeText(MainActivity.this, "Save failed!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                getSupportFragmentManager()
+                        .setFragmentResultListener("save_current_profile", MainActivity.this, (requestKey, result) -> {
+                            String data = result.getString("data");
+                            boolean success = settings.edit().putString("current_profile", data)
+                                    .commit();
+                            if (!success) {
+                                Toast.makeText(MainActivity.this, "Save failed!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                ProfileDatabase profileDatabase = Room.databaseBuilder(MainActivity.this, ProfileDatabase.class, "profile")
+                        .addTypeConverter(new ProfileTypeConverters())
+                        .allowMainThreadQueries()
+                        .fallbackToDestructiveMigration()
+                        .build();
+
+                FragmentManager supportFragmentManager = getSupportFragmentManager();
+                supportFragmentManager
+                        .beginTransaction()
+                        // .add(R.id.fragment_container_view, ShowListFragment.class, null)
+                        .replace(R.id.fragment_container_view, new ShowListFragment(profileDatabase, settings))
+                        .setReorderingAllowed(true)
+                        .commit();
+            }
+
+            @Override
+            public void onServiceDied(@NonNull XposedService service) {
+
             }
         });
-        supportFragmentManager
-                .beginTransaction()
-                .add(R.id.fragment_container_view, ShowListFragment.class, null)
-                .setReorderingAllowed(true)
-                .commit();
     }
 }

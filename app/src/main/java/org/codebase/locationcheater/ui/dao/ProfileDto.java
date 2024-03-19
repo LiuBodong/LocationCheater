@@ -1,23 +1,61 @@
 package org.codebase.locationcheater.ui.dao;
 
+import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
+@Entity(tableName = "profile")
 public class ProfileDto {
 
-    private String profileName;
+    @PrimaryKey(autoGenerate = true)
+    private long id;
 
+    private @NonNull String profileName = UUID.randomUUID().toString();
+
+    @ColumnInfo(name = "wifi_enabled")
     private boolean wifiEnabled;
 
-    private WifiDto currentWifi;
+    @ColumnInfo(name = "connected_wifi")
+    private WifiDto connectedWifi;
 
+    @ColumnInfo(name = "scan_results")
     private List<WifiDto> scanResults = Collections.emptyList();
 
+    @ColumnInfo(name = "telephones")
     private List<TelephoneDto> telephones = Collections.emptyList();
 
+    @ColumnInfo(name = "location")
     private LocationDto location;
 
+    @ColumnInfo(name = "create_time")
     private long createTime = System.currentTimeMillis();
+
+    @Ignore
+    public ProfileDto(@NonNull String profileName, boolean wifiEnabled, WifiDto connectedWifi, List<WifiDto> scanResults, List<TelephoneDto> telephones, LocationDto location) {
+        this.profileName = profileName;
+        this.wifiEnabled = wifiEnabled;
+        this.connectedWifi = connectedWifi;
+        this.scanResults = scanResults;
+        this.telephones = telephones;
+        this.location = location;
+    }
+
+    public ProfileDto() {
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getProfileName() {
         return profileName;
@@ -35,12 +73,12 @@ public class ProfileDto {
         this.wifiEnabled = wifiEnabled;
     }
 
-    public WifiDto getCurrentWifi() {
-        return currentWifi;
+    public WifiDto getConnectedWifi() {
+        return connectedWifi;
     }
 
-    public void setCurrentWifi(WifiDto currentWifi) {
-        this.currentWifi = currentWifi;
+    public void setConnectedWifi(WifiDto connectedWifi) {
+        this.connectedWifi = connectedWifi;
     }
 
     public List<WifiDto> getScanResults() {

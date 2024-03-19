@@ -34,15 +34,15 @@ public class MainHook extends XposedModule {
         }
 
         SharedPreferences settings = getRemotePreferences("settings");
+        if (settings.getBoolean("enabled", false)) {
+            ClassLoader classLoader = param.getClassLoader();
+            try {
+                this.hookLocation(classLoader);
+                this.hookWifiManager(classLoader);
+            } catch (Exception ignored) {
 
-        ClassLoader classLoader = param.getClassLoader();
-        try {
-            this.hookLocation(classLoader);
-            this.hookWifiManager(classLoader);
-        } catch (Exception ignored) {
-
+            }
         }
-
     }
 
     private void hookLocation(ClassLoader classLoader) throws Exception {

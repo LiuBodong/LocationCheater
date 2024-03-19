@@ -44,6 +44,18 @@ public class LocationTelephoneItem extends LinearLayout {
         binding.telephoneInformationCid.setText(cid);
     }
 
+    public String getType() {
+        return binding.telephoneType.getText().toString();
+    }
+
+    public String getLac() {
+        return binding.telephoneInformationLac.getText().toString();
+    }
+
+    public String getCid() {
+        return binding.telephoneInformationCid.getText().toString();
+    }
+
     public void onItemDelete(Consumer<View> action) {
         binding.telephoneInformationItemDeleteButton.setOnClickListener(action::accept);
     }

@@ -19,7 +19,7 @@ public class LocationHookers {
 
         @AfterInvocation
         public static void after(XposedInterface.AfterHookCallback afterHookCallback) {
-            afterHookCallback.setResult(40.84F);
+            afterHookCallback.setResult(40.84D);
         }
 
     }
@@ -33,7 +33,7 @@ public class LocationHookers {
 
         @AfterInvocation
         public static void after(XposedInterface.AfterHookCallback afterHookCallback) {
-            afterHookCallback.setResult(111.76F);
+            afterHookCallback.setResult(111.76D);
         }
 
     }
