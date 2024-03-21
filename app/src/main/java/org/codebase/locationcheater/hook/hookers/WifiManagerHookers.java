@@ -6,7 +6,6 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiSsid;
-import android.util.Log;
 import android.util.Pair;
 
 import org.codebase.locationcheater.hook.ProfileDtoHolder;
