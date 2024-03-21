@@ -1,9 +1,12 @@
 package org.codebase.locationcheater.hook.hookers;
 
+import static org.codebase.locationcheater.hook.MainHook.module;
+
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiSsid;
+import android.util.Log;
 import android.util.Pair;
 
 import org.codebase.locationcheater.hook.ProfileDtoHolder;
@@ -49,8 +52,10 @@ public class WifiManagerHookers extends HookersHelper {
         public static void after(XposedInterface.AfterHookCallback afterHookCallback) {
             ProfileDtoHolder.doIfNonNull(profileDto -> {
                 if (profileDto.isWifiEnabled()) {
+                    module.log("Wifi state is enabled");
                     afterHookCallback.setResult(WifiManager.WIFI_STATE_ENABLED);
                 } else {
+                    module.log("Wifi state is disabled");
                     afterHookCallback.setResult(WifiManager.WIFI_STATE_DISABLED);
                 }
             });
@@ -112,7 +117,7 @@ public class WifiManagerHookers extends HookersHelper {
                             setWifiSsidMethod.setAccessible(true);
                             setWifiSsidMethod.invoke(scanResult, wifiSsid);
                         } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            module.log("Error create scan result", e);
                         }
                     }
                     return scanResult;

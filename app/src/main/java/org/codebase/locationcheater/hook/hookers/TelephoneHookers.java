@@ -1,9 +1,28 @@
 package org.codebase.locationcheater.hook.hookers;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
+import android.telephony.CellIdentity;
 import android.telephony.CellIdentityCdma;
+import android.telephony.CellIdentityGsm;
+import android.telephony.CellIdentityLte;
+import android.telephony.CellIdentityNr;
+import android.telephony.CellIdentityTdscdma;
+import android.telephony.CellIdentityWcdma;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoNr;
+import android.telephony.CellInfoTdscdma;
+import android.telephony.CellInfoWcdma;
+import android.telephony.CellSignalStrength;
+import android.telephony.CellSignalStrengthCdma;
+import android.telephony.CellSignalStrengthGsm;
+import android.telephony.CellSignalStrengthLte;
+import android.telephony.CellSignalStrengthNr;
+import android.telephony.CellSignalStrengthTdscdma;
+import android.telephony.CellSignalStrengthWcdma;
 import android.telephony.TelephonyManager;
 import android.telephony.cdma.CdmaCellLocation;
 import android.telephony.gsm.GsmCellLocation;
@@ -87,23 +106,182 @@ public class TelephoneHookers extends HookersHelper {
                                 try {
                                     switch (telephoneDto.getType().toUpperCase()) {
                                         case "CDMA":
-                                            Class<? extends CellInfoCdma> cellInfoCdmaClass = CellInfoCdma.class;
-                                            Constructor<? extends CellInfoCdma> cellInfoCdmaConstructor = cellInfoCdmaClass.getDeclaredConstructor();
-                                            Method setCdmaCellIdentityMethod = cellInfoCdmaClass.getDeclaredMethod("setCellIdentity", CellIdentityCdma.class);
-                                            setCdmaCellIdentityMethod.setAccessible(true);
-                                            CellInfoCdma cellInfoCdma = cellInfoCdmaConstructor.newInstance();
                                             Class<? extends CellIdentityCdma> cellIdentityCdmaClass = CellIdentityCdma.class;
                                             CellIdentityCdma cellIdentityCdma = cellIdentityCdmaClass.getDeclaredConstructor().newInstance();
-                                            if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                                                Field mNetworkId = cellIdentityCdmaClass.getDeclaredField("mNetworkId");
-                                            }
-                                            setCdmaCellIdentityMethod.invoke(cellInfoCdma, cellIdentityCdma);
-                                            return cellInfoCdma;
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field mNetworkIdField = cellIdentityCdmaClass.getDeclaredField("mNetworkId");
+                                            mNetworkIdField.setAccessible(true);
+                                            mNetworkIdField.set(cellIdentityCdma, telephoneDto.getCid());
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field mBasestationIdField = cellIdentityCdmaClass.getDeclaredField("mBasestationId");
+                                            mBasestationIdField.setAccessible(true);
+                                            mBasestationIdField.set(cellIdentityCdma, telephoneDto.getLac());
+
+                                            CellSignalStrengthCdma cellSignalStrengthCdma = CellSignalStrengthCdma.class
+                                                    .getDeclaredConstructor(int.class, int.class, int.class, int.class, int.class)
+                                                    .newInstance(CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE);
+
+                                            return CellInfoCdma.class.getDeclaredConstructor(
+                                                            int.class,
+                                                            boolean.class,
+                                                            long.class,
+                                                            CellIdentityCdma.class,
+                                                            CellSignalStrengthCdma.class)
+                                                    .newInstance(
+                                                            CellInfo.CONNECTION_NONE,
+                                                            false,
+                                                            Long.MAX_VALUE,
+                                                            cellIdentityCdma,
+                                                            cellSignalStrengthCdma);
                                         case "TDSCDMA":
+                                            Class<? extends CellIdentityTdscdma> cellIdentityTdscdmaClass = CellIdentityTdscdma.class;
+                                            CellIdentityTdscdma cellIdentityTdscdma = cellIdentityTdscdmaClass.getDeclaredConstructor().newInstance();
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field cellIdentityTdscdmaMCidField = cellIdentityTdscdmaClass.getDeclaredField("mCid");
+                                            cellIdentityTdscdmaMCidField.setAccessible(true);
+                                            cellIdentityTdscdmaMCidField.set(cellIdentityTdscdma, telephoneDto.getCid());
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field cellIdentityTdscdmaMLacField = cellIdentityTdscdmaClass.getDeclaredField("mLac");
+                                            cellIdentityTdscdmaMLacField.setAccessible(true);
+                                            cellIdentityTdscdmaMLacField.set(cellIdentityTdscdma, telephoneDto.getLac());
+
+                                            CellSignalStrengthTdscdma cellSignalStrengthTdscdma =
+                                                    CellSignalStrengthTdscdma.class
+                                                            .getDeclaredConstructor(int.class, int.class, int.class)
+                                                            .newInstance(CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE);
+
+                                            Class<? extends CellInfoTdscdma> cellInfoTdscdmaClass = CellInfoTdscdma.class;
+                                            return cellInfoTdscdmaClass.getDeclaredConstructor(
+                                                            int.class,
+                                                            boolean.class,
+                                                            long.class,
+                                                            CellIdentityTdscdma.class,
+                                                            CellSignalStrengthTdscdma.class)
+                                                    .newInstance(
+                                                            CellInfo.CONNECTION_NONE,
+                                                            false,
+                                                            Long.MAX_VALUE,
+                                                            cellIdentityTdscdma,
+                                                            cellSignalStrengthTdscdma);
                                         case "WCDMA":
+                                            Class<? extends CellIdentityWcdma> cellIdentityWcdmaClass = CellIdentityWcdma.class;
+                                            CellIdentityWcdma cellIdentityWcdma = cellIdentityWcdmaClass.getDeclaredConstructor().newInstance();
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field cellIdentityWcdmaMLacField = cellIdentityWcdmaClass.getDeclaredField("mLac");
+                                            cellIdentityWcdmaMLacField.setAccessible(true);
+                                            cellIdentityWcdmaMLacField.set(cellIdentityWcdma, telephoneDto.getLac());
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field cellIdentityWcdmaMCidField = cellIdentityWcdmaClass.getDeclaredField("mCid");
+                                            cellIdentityWcdmaMCidField.setAccessible(true);
+                                            cellIdentityWcdmaMCidField.set(cellIdentityWcdma, telephoneDto.getCid());
+
+                                            CellSignalStrengthWcdma cellSignalStrengthWcdma =
+                                                    CellSignalStrengthWcdma.class
+                                                            .getDeclaredConstructor(int.class, int.class, int.class, int.class)
+                                                            .newInstance(CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE);
+
+                                            return CellInfoWcdma.class.getDeclaredConstructor(
+                                                            int.class,
+                                                            boolean.class,
+                                                            long.class,
+                                                            CellIdentityWcdma.class,
+                                                            CellSignalStrengthWcdma.class)
+                                                    .newInstance(
+                                                            CellInfo.CONNECTION_NONE,
+                                                            false,
+                                                            Long.MAX_VALUE,
+                                                            cellIdentityWcdma,
+                                                            cellSignalStrengthWcdma);
                                         case "GSM":
+                                            Class<? extends CellIdentityGsm> cellIdentityGsmClass = CellIdentityGsm.class;
+                                            CellIdentityGsm cellIdentityGsm = cellIdentityGsmClass.getDeclaredConstructor().newInstance();
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field cellIdentityGsmMLacField = cellIdentityGsmClass.getDeclaredField("mLac");
+                                            cellIdentityGsmMLacField.setAccessible(true);
+                                            cellIdentityGsmMLacField.set(cellIdentityGsm, telephoneDto.getLac());
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field cellIdentityGsmMCidField = cellIdentityGsmClass.getDeclaredField("mCid");
+                                            cellIdentityGsmMCidField.setAccessible(true);
+                                            cellIdentityGsmMCidField.set(cellIdentityGsm, telephoneDto.getCid());
+
+                                            CellSignalStrengthGsm cellSignalStrengthGsm =
+                                                    CellSignalStrengthGsm.class
+                                                            .getDeclaredConstructor(int.class, int.class, int.class)
+                                                            .newInstance(CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE);
+
+                                            return CellInfoGsm.class.getDeclaredConstructor(
+                                                            int.class,
+                                                            boolean.class,
+                                                            long.class,
+                                                            CellIdentityGsm.class,
+                                                            CellSignalStrengthGsm.class)
+                                                    .newInstance(CellInfo.CONNECTION_NONE,
+                                                            false,
+                                                            Long.MAX_VALUE,
+                                                            cellIdentityGsm,
+                                                            cellSignalStrengthGsm);
                                         case "LTE":
+                                            Class<? extends CellIdentityLte> cellIdentityLteClass = CellIdentityLte.class;
+                                            CellIdentityLte cellIdentityLte = cellIdentityLteClass.getDeclaredConstructor().newInstance();
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field cellIdentityLteMCiField = cellIdentityLteClass.getDeclaredField("mCi");
+                                            cellIdentityLteMCiField.setAccessible(true);
+                                            cellIdentityLteMCiField.set(cellIdentityLte, telephoneDto.getCid());
+                                            @SuppressLint("SoonBlockedPrivateApi")
+                                            Field cellIdentityLteMTacField = cellIdentityLteClass.getDeclaredField("mTac");
+                                            cellIdentityLteMTacField.setAccessible(true);
+                                            cellIdentityLteMTacField.set(cellIdentityLte, telephoneDto.getLac());
+
+                                            CellSignalStrengthLte cellSignalStrengthLte =
+                                                    CellSignalStrengthLte.class
+                                                            .getDeclaredConstructor(int.class, int.class, int.class, int.class, int.class, int.class, int.class)
+                                                            .newInstance(CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE,
+                                                                    CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE, CellInfo.UNAVAILABLE);
+
+                                            Class<?> cellConfigLteClass = Class.forName("android.telephony.CellConfigLte");
+                                            Object cellConfigLte = cellConfigLteClass.getDeclaredConstructor(boolean.class).newInstance(false);
+
+                                            return CellInfoLte.class.getDeclaredConstructor(
+                                                            int.class,
+                                                            boolean.class,
+                                                            long.class,
+                                                            CellIdentityLte.class,
+                                                            CellSignalStrengthLte.class,
+                                                            cellConfigLteClass)
+                                                    .newInstance(CellInfo.CONNECTION_NONE,
+                                                            false,
+                                                            Long.MAX_VALUE,
+                                                            cellIdentityLte,
+                                                            cellSignalStrengthLte,
+                                                            cellConfigLte);
                                         case "NR":
+                                            Class<CellIdentityNr> cellIdentityNrClass = CellIdentityNr.class;
+                                            CellIdentityNr cellIdentityNr = cellIdentityNrClass.getDeclaredConstructor().newInstance();
+                                            @SuppressLint("BlockedPrivateApi")
+                                            Field cellIdentityNrMPciField = cellIdentityNrClass.getDeclaredField("mPci");
+                                            cellIdentityNrMPciField.setAccessible(true);
+                                            cellIdentityNrMPciField.set(cellIdentityNr, telephoneDto.getCid());
+                                            @SuppressLint("BlockedPrivateApi")
+                                            Field cellIdentityNrMTacField = cellIdentityNrClass.getDeclaredField("mTac");
+                                            cellIdentityNrMTacField.setAccessible(true);
+                                            cellIdentityNrMTacField.set(cellIdentityNr, telephoneDto.getLac());
+
+                                            CellSignalStrengthNr cellSignalStrengthNr =
+                                                    CellSignalStrengthNr.class.getDeclaredConstructor().newInstance();
+
+                                            return CellInfoNr.class
+                                                    .getDeclaredConstructor(
+                                                            int.class,
+                                                            boolean.class,
+                                                            long.class,
+                                                            CellIdentityNr.class,
+                                                            CellSignalStrengthNr.class)
+                                                    .newInstance(
+                                                            CellInfo.CONNECTION_NONE,
+                                                            false,
+                                                            Long.MAX_VALUE,
+                                                            cellIdentityNr,
+                                                            cellSignalStrengthNr);
                                         default:
                                             return null;
                                     }

@@ -14,6 +14,9 @@ import io.github.libxposed.api.XposedModule;
 
 public class MainHook extends XposedModule {
 
+    public static XposedModule module;
+
+
     /**
      * Instantiates a new Xposed module.<br/>
      * When the module is loaded into the target process, the constructor will be called.
@@ -23,6 +26,7 @@ public class MainHook extends XposedModule {
      */
     public MainHook(@NonNull XposedInterface base, @NonNull ModuleLoadedParam param) {
         super(base, param);
+        module = this;
     }
 
     @Override
