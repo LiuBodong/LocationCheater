@@ -71,6 +71,8 @@ public class ShowListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         this.initList();
         if (savedInstanceState == null) {
+            boolean enabled = settings.getBoolean("enabled", false);
+            binding.switchLocationEnable.setChecked(enabled);
             binding.addLocationButton.setOnClickListener(v ->
                     getParentFragmentManager()
                             .beginTransaction()

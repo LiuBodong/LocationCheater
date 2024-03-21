@@ -3,12 +3,11 @@ package org.codebase.locationcheater.hook;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import org.codebase.locationcheater.hook.hookers.LocationHookers;
-import org.codebase.locationcheater.hook.hookers.WifiManagerHookers;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
-import java.lang.reflect.Method;
+import org.codebase.locationcheater.hook.hookers.HookersHelper;
+import org.codebase.locationcheater.ui.dao.ProfileDto;
 
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
@@ -35,28 +34,19 @@ public class MainHook extends XposedModule {
 
         SharedPreferences settings = getRemotePreferences("settings");
         if (settings.getBoolean("enabled", false)) {
-            ClassLoader classLoader = param.getClassLoader();
+            String currentProfileJson = settings.getString("current_profile", null);
             try {
-                this.hookLocation(classLoader);
-                this.hookWifiManager(classLoader);
+               ProfileDto profileDto = JsonMapper.builder().build().readValue(currentProfileJson, ProfileDto.class);
+               ProfileDtoHolder.setProfileDto(profileDto);
             } catch (Exception ignored) {
 
             }
+            ClassLoader classLoader = param.getClassLoader();
+            Hookers hookers = new Hookers(classLoader);
+            hookers.getHookMap().forEach(this::hook);
         }
     }
 
-    private void hookLocation(ClassLoader classLoader) throws Exception {
-        Class<?> locationClass = Class.forName("android.location.Location", false, classLoader);
-        Method getLatitudeMethod = locationClass.getDeclaredMethod("getLatitude");
-        Method getLongitudeMethod = locationClass.getDeclaredMethod("getLongitude");
-        hook(getLatitudeMethod, LocationHookers.GetLatitudeHooker.class);
-        hook(getLongitudeMethod, LocationHookers.GetLongitudeHooker.class);
-    }
 
-    private void hookWifiManager(ClassLoader classLoader) throws Exception {
-        Class<?> wifiManagerClass = Class.forName("android.net.wifi.WifiManager", false, classLoader);
-        Method getScanResultsMethod = wifiManagerClass.getDeclaredMethod("getScanResults");
-        hook(getScanResultsMethod, WifiManagerHookers.GetScanResultsHooker.class);
-    }
 
 }
