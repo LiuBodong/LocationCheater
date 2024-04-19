@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 
 public class ProfileItemView extends LinearLayout {
 
-    private ProfileItemBinding binding;
+    private final ProfileItemBinding binding;
 
     public ProfileItemView(@NonNull Context context) {
         super(context);
@@ -37,6 +37,10 @@ public class ProfileItemView extends LinearLayout {
 
     public void setChecked(boolean checked) {
         binding.checkedButton.setChecked(checked);
+    }
+
+    public boolean isChecked() {
+        return binding.checkedButton.isChecked();
     }
 
     public void setOnChecked(CompoundButton.OnCheckedChangeListener onChecked) {

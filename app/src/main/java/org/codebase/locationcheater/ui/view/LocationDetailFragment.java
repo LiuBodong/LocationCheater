@@ -60,6 +60,8 @@ public class LocationDetailFragment extends Fragment {
 
     private ProfileDto profileDto;
 
+    private boolean isCurrentChecked = false;
+
     private LocationDetailFragmentBinding binding;
 
     private ActivityResultLauncher<String> requestPermissionLauncher;
@@ -68,9 +70,10 @@ public class LocationDetailFragment extends Fragment {
         super(R.layout.location_detail_fragment);
     }
 
-    public LocationDetailFragment(ProfileDto profileDto) {
+    public LocationDetailFragment(ProfileDto profileDto, boolean isCurrentChecked) {
         this();
         this.profileDto = profileDto;
+        this.isCurrentChecked = isCurrentChecked;
     }
 
     @Override
@@ -124,6 +127,7 @@ public class LocationDetailFragment extends Fragment {
                 }
                 Bundle bundle = new Bundle();
                 bundle.putString("data", data);
+                bundle.putBoolean("isChecked", isCurrentChecked);
                 getParentFragmentManager().setFragmentResult("data", bundle);
                 getParentFragmentManager().popBackStack();
             });

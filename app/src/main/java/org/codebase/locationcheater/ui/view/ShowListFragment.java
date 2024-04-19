@@ -45,11 +45,15 @@ public class ShowListFragment extends Fragment {
                 .setFragmentResultListener("data", this, (requestKey, result) -> {
                     if (requestKey.equals("data")) {
                         String data = result.getString("data");
+                        boolean isChecked = result.getBoolean("isChecked", false);
                         if (StringUtils.isNotEmpty(data)) {
                             ProfileDto profileDto = null;
                             try {
                                 profileDto = JsonMapper.builder().build().readValue(data, ProfileDto.class);
                                 profileDatabase.profileDao().insertAll(profileDto);
+                                if (isChecked) {
+                                    settings.edit().putString("current_profile", data).apply();
+                                }
                             } catch (JsonProcessingException e) {
                                 throw new RuntimeException(e);
                             }
@@ -78,7 +82,7 @@ public class ShowListFragment extends Fragment {
                             .beginTransaction()
                             .addToBackStack("showListFragment")
                             // .replace(R.id.fragment_container_view, LocationDetailFragment.class, null)
-                            .replace(R.id.fragment_container_view, new LocationDetailFragment(null))
+                            .replace(R.id.fragment_container_view, new LocationDetailFragment())
                             .setReorderingAllowed(true)
                             .commit());
         }
@@ -122,7 +126,7 @@ public class ShowListFragment extends Fragment {
                             try {
                                 String data = JsonMapper.builder().build()
                                                 .writeValueAsString(profileDto);
-                                settings.edit().putString("current_profile", data).commit();
+                                settings.edit().putString("current_profile", data).apply();
                             } catch (JsonProcessingException e) {
                                 throw new RuntimeException(e);
                             }
@@ -140,7 +144,7 @@ public class ShowListFragment extends Fragment {
                                     profileDatabase.profileDao().deleteAll(profileDto);
                                     break;
                                 case 1:
-                                    LocationDetailFragment locationDetailFragment = new LocationDetailFragment(profileDto);
+                                    LocationDetailFragment locationDetailFragment = new LocationDetailFragment(profileDto, profileItemView.isChecked());
                                     getParentFragmentManager()
                                             .beginTransaction()
                                             .addToBackStack("showListFragment")
