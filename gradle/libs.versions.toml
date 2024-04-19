@@ -1,8 +1,8 @@
 [versions]
-agp = "8.3.1"
+agp = "8.3.2"
 appcompat = "1.6.1"
 material = "1.11.0"
-activity = "1.8.2"
+activity = "1.9.0"
 constraintlayout = "2.1.4"
 xposed-api = "100"
 xposed-service = "100-1.0.0"

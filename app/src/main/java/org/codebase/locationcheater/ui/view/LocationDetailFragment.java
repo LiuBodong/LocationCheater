@@ -192,7 +192,9 @@ public class LocationDetailFragment extends Fragment {
                 .collect(Collectors.toList());
         String latitude = binding.latitude.getText().toString();
         String longitude = binding.longitude.getText().toString();
-        LocationDto locationDto = new LocationDto(Float.parseFloat(latitude), Float.parseFloat(longitude));
+        float latitudeFloat = StringUtils.isEmpty(latitude) ? 0F : Float.parseFloat(latitude);
+        float longitudeFloat = StringUtils.isEmpty(longitude) ? 0F : Float.parseFloat(longitude);
+        LocationDto locationDto = new LocationDto(latitudeFloat, longitudeFloat);
         ProfileDto newProfileDto = new ProfileDto(profileName, wifiEnabled, connectedWifi, wifiScanResults, telephoneInfoList, locationDto);
         if (this.profileDto != null) {
             newProfileDto.setId(this.profileDto.getId());
