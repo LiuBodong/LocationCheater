@@ -1,16 +1,16 @@
 [versions]
-agp = "8.3.2"
-appcompat = "1.6.1"
-material = "1.11.0"
-activity = "1.9.0"
+agp = "8.7.0"
+appcompat = "1.7.0"
+material = "1.12.0"
+activity = "1.9.2"
 constraintlayout = "2.1.4"
 xposed-api = "100"
 xposed-service = "100-1.0.0"
 room = "2.6.1"
-navigation-fragment = "2.7.7"
-navigation-ui = "2.7.7"
-jackson = "2.16.2"
-commons-lang3 = "3.14.0"
+navigation-fragment = "2.8.2"
+navigation-ui = "2.8.2"
+jackson = "2.17.2"
+commons-lang3 = "3.17.0"
 
 [libraries]
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
