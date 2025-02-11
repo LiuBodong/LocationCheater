@@ -15,7 +15,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import io.github.libxposed.api.XposedInterface;
@@ -102,25 +104,28 @@ public class WifiManagerHookers extends HookersHelper {
         @AfterInvocation
         public static void after(XposedInterface.AfterHookCallback afterHookCallback) {
             ProfileDtoHolder.doIfNonNull(profileDto -> {
-                List<ScanResult> scanResults = profileDto.getScanResults().stream().map(wifiDto -> {
-                    ScanResult scanResult = new ScanResult();
-                    scanResult.SSID = wifiDto.getSsid();
-                    scanResult.BSSID = wifiDto.getMac();
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                        Class<WifiSsid> wifiSsidClass = WifiSsid.class;
-                        try {
-                            Constructor<? extends WifiSsid> wifiSsidConstructor = wifiSsidClass.getDeclaredConstructor(byte[].class);
-                            WifiSsid wifiSsid = wifiSsidConstructor.newInstance(wifiDto.getSsid().getBytes(StandardCharsets.UTF_8));
-                            Class<? extends ScanResult> scanResultClass = scanResult.getClass();
-                            Method setWifiSsidMethod = scanResultClass.getDeclaredMethod("setWifiSsid", WifiSsid.class);
-                            setWifiSsidMethod.setAccessible(true);
-                            setWifiSsidMethod.invoke(scanResult, wifiSsid);
-                        } catch (Exception e) {
-                            module.log("Error create scan result", e);
-                        }
-                    }
-                    return scanResult;
-                }).collect(Collectors.toList());
+                final Random random = new SecureRandom();
+                List<ScanResult> scanResults = profileDto.getScanResults().stream()
+                        .filter(i -> random.nextInt(100) > 30)
+                        .map(wifiDto -> {
+                            ScanResult scanResult = new ScanResult();
+                            scanResult.SSID = wifiDto.getSsid();
+                            scanResult.BSSID = wifiDto.getMac();
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                Class<WifiSsid> wifiSsidClass = WifiSsid.class;
+                                try {
+                                    Constructor<? extends WifiSsid> wifiSsidConstructor = wifiSsidClass.getDeclaredConstructor(byte[].class);
+                                    WifiSsid wifiSsid = wifiSsidConstructor.newInstance(wifiDto.getSsid().getBytes(StandardCharsets.UTF_8));
+                                    Class<? extends ScanResult> scanResultClass = scanResult.getClass();
+                                    Method setWifiSsidMethod = scanResultClass.getDeclaredMethod("setWifiSsid", WifiSsid.class);
+                                    setWifiSsidMethod.setAccessible(true);
+                                    setWifiSsidMethod.invoke(scanResult, wifiSsid);
+                                } catch (Exception e) {
+                                    module.log("Error create scan result", e);
+                                }
+                            }
+                            return scanResult;
+                        }).collect(Collectors.toList());
                 afterHookCallback.setResult(scanResults);
             });
         }

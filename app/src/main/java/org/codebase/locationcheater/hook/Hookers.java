@@ -3,7 +3,7 @@ package org.codebase.locationcheater.hook;
 import android.util.Pair;
 
 import org.codebase.locationcheater.hook.hookers.HookersHelper;
-import org.codebase.locationcheater.hook.hookers.LocationHookers;
+import org.codebase.locationcheater.hook.hookers.LocationManagerHookers;
 import org.codebase.locationcheater.hook.hookers.TelephoneHookers;
 import org.codebase.locationcheater.hook.hookers.WifiManagerHookers;
 
@@ -21,7 +21,12 @@ public class Hookers extends HookersHelper {
 
     @Override
     public List<Pair<MethodDescriptor, Class<? extends XposedInterface.Hooker>>> getHookList() {
-        return Stream.of(new WifiManagerHookers(classLoader), new TelephoneHookers(classLoader), new LocationHookers(classLoader))
+        return Stream.of(
+                        new WifiManagerHookers(classLoader),
+                        new TelephoneHookers(classLoader),
+                        // new LocationHookers(classLoader)
+                        new LocationManagerHookers(classLoader)
+                )
                 .flatMap(hookersHelper -> hookersHelper.getHookList().stream())
                 .collect(Collectors.toList());
     }

@@ -69,7 +69,7 @@ public abstract class HookersHelper implements HookersBase {
         }
 
         public static MethodDescriptor of(String className, String methodName, Class<?>[] parameterTypes) {
-            return of(className, methodName, parameterTypes);
+            return new MethodDescriptor(className, methodName, parameterTypes);
         }
 
         public String getClassName() {
