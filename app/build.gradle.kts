@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "org.codebase.locationcheater"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "org.codebase.locationcheater"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 11
         versionName = "1.1"
 
@@ -40,7 +40,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
-    buildToolsVersion = "34.0.0"
+    buildToolsVersion = "35.0.0"
 }
 
 dependencies {
